@@ -1,0 +1,22 @@
+{
+  "name": "student-task-manager-iac",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Automated Deployment of a Serverless Student Task Management Application Using Terraform-Based Infrastructure as Code",
+  "main": "application/worker.js",
+  "scripts": {
+    "build": "node build.js",
+    "test": "node test/run-tests.js",
+    "lint": "node --check application/worker.js"
+  },
+  "keywords": [
+    "terraform",
+    "iac",
+    "cloudflare-workers",
+    "workers-kv",
+    "serverless",
+    "student-task-manager"
+  ],
+  "author": "Mudit Katre",
+  "license": "MIT"
+}

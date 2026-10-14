@@ -1,0 +1,20 @@
+# Cloudflare Terraform Variables Example
+# Copy this file to terraform.tfvars and fill in your actual credentials.
+# WARNING: NEVER commit your actual terraform.tfvars file or API tokens to GitHub.
+
+# 1. Cloudflare API Token
+# Create via: Cloudflare Dashboard -> My Profile -> API Tokens -> Create Custom Token
+# Permissions required:
+#   - Account | Workers KV Storage | Edit
+#   - Account | Workers Scripts | Edit
+cloudflare_api_token = "your_cloudflare_api_token_here"
+
+# 2. Cloudflare Account ID
+# Found on the right sidebar of the Cloudflare Dashboard under "Account ID"
+account_id = "your_cloudflare_account_id_here"
+
+# 3. Application & Resource Names
+worker_name       = "student-task-manager"
+kv_namespace_name = "student_tasks"
+environment       = "production"
+app_title         = "Student Task Manager"
