@@ -106,21 +106,10 @@ export default {
       try {
         // GET /api/tasks - Retrieve all tasks
         if (method === 'GET' && !taskId) {
-          let index = await kv.get('task_index', 'json');
-          if (!index || !Array.isArray(index)) {
-            // Re-discover from KV prefix listing if index is empty
-            const list = await kv.list({ prefix: 'task:' });
-            index = list.keys.map(k => k.name.replace('task:', ''));
-            if (index.length > 0) {
-              await kv.put('task_index', JSON.stringify(index));
-            } else {
-              index = [];
-            }
-          }
-
+          const list = await kv.list({ prefix: 'task:' });
           const tasks = [];
-          for (const id of index) {
-            const task = await kv.get(`task:${id}`, 'json');
+          for (const key of list.keys) {
+            const task = await kv.get(key.name, 'json');
             if (task) {
               tasks.push(task);
             }
@@ -151,13 +140,10 @@ export default {
             return jsonResponse({ error: 'Field "title" is required' }, 400);
           }
 
-          let index = await kv.get('task_index', 'json');
-          if (!Array.isArray(index)) {
-            const list = await kv.list({ prefix: 'task:' });
-            index = list.keys.map(k => k.name.replace('task:', ''));
-          }
+          const list = await kv.list({ prefix: 'task:' });
+          const existingIds = list.keys.map(k => k.name.replace('task:', ''));
 
-          const id = body.id || generateTaskId(index);
+          const id = body.id || generateTaskId(existingIds);
           const now = new Date().toISOString();
 
           const newTask = {
@@ -171,12 +157,8 @@ export default {
             updatedAt: now
           };
 
-          // Save individual task record and update index
+          // Save individual task record
           await kv.put(`task:${id}`, JSON.stringify(newTask));
-          if (!index.includes(id)) {
-            index.push(id);
-            await kv.put('task_index', JSON.stringify(index));
-          }
 
           return jsonResponse(newTask, 201);
         }
@@ -217,12 +199,6 @@ export default {
           }
 
           await kv.delete(`task:${taskId}`);
-
-          let index = await kv.get('task_index', 'json');
-          if (Array.isArray(index)) {
-            index = index.filter(id => id !== taskId);
-            await kv.put('task_index', JSON.stringify(index));
-          }
 
           return jsonResponse({
             message: 'Task removed successfully.',
