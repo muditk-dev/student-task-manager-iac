@@ -38,28 +38,31 @@ jobs:
         with:
           terraform_version: 1.16.5
 
-      - name: Step 13: Terraform Format Check
+      - name: "Step 13: Terraform Format Check"
         run: terraform fmt -check
 
-      - name: Step 12: Terraform Init
+      - name: "Step 12: Terraform Init"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: terraform init
 
-      - name: Step 14: Terraform Validate
+      - name: "Step 14: Terraform Validate"
         run: terraform validate
 
       - name: Verify Cloudflare Credentials in Secrets
         id: check-secrets
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ] || [ -z "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
+          if [ -z "$CF_API_TOKEN" ] || [ -z "$CF_ACCOUNT_ID" ]; then
             echo "has_credentials=false" >> $GITHUB_OUTPUT
             echo "::warning::Cloudflare secrets (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID) are not configured in GitHub Secrets. Skipping plan and deploy steps until configured."
           else
             echo "has_credentials=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Step 15: Terraform Plan
+      - name: "Step 15: Terraform Plan"
         id: plan
         if: steps.check-secrets.outputs.has_credentials == 'true'
         env:
@@ -68,7 +71,7 @@ jobs:
         run: |
           terraform plan -out=tfplan -input=false
 
-      - name: Step 16: Terraform Apply (Deploy on Push)
+      - name: "Step 16: Terraform Apply (Deploy on Push)"
         if: steps.check-secrets.outputs.has_credentials == 'true' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         env:
           TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
