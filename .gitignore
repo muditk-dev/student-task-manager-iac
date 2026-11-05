@@ -54,3 +54,6 @@ ehthumbs.db
 .wrangler/
 dist/
 build/
+
+.cf_session/
+

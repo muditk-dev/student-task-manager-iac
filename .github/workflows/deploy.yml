@@ -62,6 +62,26 @@ jobs:
             echo "has_credentials=true" >> $GITHUB_OUTPUT
           fi
 
+      - name: "Restore Terraform State Cache"
+        if: steps.check-secrets.outputs.has_credentials == 'true'
+        uses: actions/cache@v4
+        with:
+          path: terraform/terraform.tfstate
+          key: terraform-state-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            terraform-state-${{ github.ref_name }}-
+
+      - name: "Sync State for Existing Cloudflare Resources"
+        if: steps.check-secrets.outputs.has_credentials == 'true'
+        env:
+          TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TF_VAR_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          terraform state show cloudflare_workers_kv_namespace.student_tasks || \
+            terraform import -input=false cloudflare_workers_kv_namespace.student_tasks "$TF_VAR_account_id/e1380c1858ff4097b9ad8645c7896dc3" || true
+          terraform state show cloudflare_workers_script.student_task_manager || \
+            terraform import -input=false cloudflare_workers_script.student_task_manager "$TF_VAR_account_id/student-task-manager" || true
+
       - name: "Step 15: Terraform Plan"
         id: plan
         if: steps.check-secrets.outputs.has_credentials == 'true'

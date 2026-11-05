@@ -19,6 +19,6 @@ output "environment" {
 }
 
 output "application_url" {
-  description = "Cloudflare Workers default URL format for this script"
-  value       = "https://${cloudflare_workers_script.student_task_manager.name}.workers.dev"
+  description = "Cloudflare Workers public application URL"
+  value       = "https://${cloudflare_workers_script.student_task_manager.name}.muditk.workers.dev"
 }
